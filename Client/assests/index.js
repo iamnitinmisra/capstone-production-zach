@@ -10,7 +10,7 @@ const baseURL = `https://api.edamam.com/search?app_id=d83bf513&app_key=fd37e0b3a
 function makeRecipeCard(recipe) {
   const recipeCard = document.createElement("div");
   recipeCard.classList.add("recipe-card");
-console.log(typeof recipe.id)
+  console.log(typeof recipe.id)
   recipeCard.innerHTML = `
   <p class= "label">${recipe.label}</p>
   <img alt='recipe cover image' src='${recipe.image}'/>
@@ -24,33 +24,27 @@ console.log(typeof recipe.id)
 }
 // <button onclick='deleteRecipes(${recipe})'>Delete</button>
 
-function getRecipes(event) {
+async function getRecipes(event) {
   event.preventDefault();
   const ingredients = document.getElementById(`input`).value;
-  axios
-    .get(baseURL + ingredients.replaceAll(` `, `%20`))
-    .then((res) => {
-      res.data.hits.forEach(({ recipe }) => {
-        // saveRecipe(http://www.edamam.com/ontologies/edamam.owl#recipe_b1957a6a4025b25f6da6aef1fad452d4)
-      const recipeID = recipe.uri.split('#')
-        const newRecipe = {
-          id: recipeID[1],
-          label: recipe.label,
-          image: recipe.image,
-          ingredients: recipe.ingredientLines,
-        };
-
-        makeRecipeCard(newRecipe);
-        //  recipes.push(newRecipe)
-      });
-    })
-    .catch((error) => console.log(error));
+  const res = await axios.get(`http://localhost:4000/recipes/?ingredient=${ingredients}`)
+  res.data.forEach(({ recipe }) => {
+    const recipeID = recipe.uri.split('#')
+    const newRecipe = {
+      id: recipeID[1],
+      label: recipe.label,
+      image: recipe.image,
+      ingredients: recipe.ingredientLines,
+    }
+    makeRecipeCard(newRecipe)
+  })
 }
 
- async function saveRecipe(recipe) {
-   const response = await axios.post(`http://localhost:3000/save-recipe/`,recipe)
-   console.log(response.data)
-  
+async function saveRecipe(recipeID) {
+  console.log(recipeID)
+  const response = await axios.post(`http://localhost:4000/recipe/`, { recipeID })
+  console.log(response.data)
+
 }
 // i know this is wrong
 async function deleteRecipe(recipe) {
